@@ -30,3 +30,73 @@ mkdir apps/order
 goctl rpc new rpc  #对内提供 rpc服务
 goctl api new admin #对内 http服务
 ```
+## 添加 apps/app api
+bff接口对外 提供 http api
+
+mall/apps/app/api/api.api
+
+```
+cd mall/apps/app/api
+goctl api go -api api.api -dir .
+```
+
+## 添加  order/rpc order.proto
+```
+rm -rf mall/apps/order/rpc
+mall/apps/order/rpc/order.proto
+goctl rpc protoc order.proto --go_out=. --go-grpc_out=. --zrpc_out=.
+```
+运行  需先启动 etcd
+```shell
+go run order.go
+```
+输出
+```shell
+Starting rpc server at 0.0.0.0:8080...
+{"@timestamp":"2025-02-22T09:48:53.173+08:00","caller":"stat/usage.go:61","content":"CPU: 0m, MEMORY: Alloc=3.2Mi, TotalAlloc=5.2Mi, Sys=14.3Mi, NumGC=3","level":"stat"}
+{"@timestamp":"2025-02-22T09:48:53.186+08:00","caller":"load/sheddingstat.go:61","content":"(rpc) shedding_stat [1m], cpu: 0, total: 0, pass: 0, drop: 0","level":"stat"}
+{"@timestamp":"2025-02-22T09:49:53.174+08:00","caller":"stat/usage.go:61","content":"CPU: 0m, MEMORY: Alloc=3.4Mi, TotalAlloc=5.3Mi, Sys=14.3Mi, NumGC=3","level":"stat"}
+{"@timestamp":"2025-02-22T09:49:53.185+08:00","caller":"load/sheddingstat.go:61","content":"(rpc) shedding_stat [1m], cpu: 0, total: 0, pass: 0, drop: 0","level":"stat"}
+```
+添加业务逻辑
+/mall/apps/order/rpc/internal/logic/orderlogic.go
+## 添加  product/rpc product.proto
+步骤和上面类似，
+需要注意修改 mall/apps/product/rpc/etc  下的端口和 order不同即可，避免端口冲突
+
+添加业务逻辑
+/mall/apps/product/rpc/internal/logic/productlogic.go
+
+## 修改 apps/app api
+修改其/etc配置，添加 order product rpc 信息
+
+在internal/config、svc 添加 rpcclient相关信息
+
+在 internal/logic 添加逻辑（会调用 rpc）
+
+##  test1 
+启动 product order rpc，启动 bff api 
+
+test
+```shell
+http://127.0.0.1:8888/v1/order/list?uid=123
+
+{
+  "orders": [
+    {
+      "order_id": "20220609123456",
+      "status": 0,
+      "quantity": 0,
+      "payment": 0,
+      "total_price": 0,
+      "create_time": 0,
+      "product_id": 0,
+      "product_name": "测试商品名称",
+      "product_image": "",
+      "product_description": ""
+    }
+  ],
+  "is_end": false,
+  "order_time": 0
+}
+```
