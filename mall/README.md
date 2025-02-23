@@ -100,3 +100,20 @@ http://127.0.0.1:8888/v1/order/list?uid=123
   "order_time": 0
 }
 ```
+## logx
+mall/apps/app/api/api.go
+
+设置关闭日志 stat,设置错误级别（取消 info,debug)
+```shell
+func init() {
+//logx.DisableStat()
+//logx.SetLevel(logx.ErrorLevel)
+}
+```
+
+logic 
+
+添加字段
+```shell
+logx.Infow("order list", logx.Field("uid",req.UID))
+```

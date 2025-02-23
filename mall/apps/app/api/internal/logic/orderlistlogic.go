@@ -34,6 +34,7 @@ func (l *OrderListLogic) OrderList(req *types.OrderListRequest) (resp *types.Ord
 	if err != nil {
 		return nil, err
 	}
+	l.Logger.Infow("order list", logx.Field("uid", req.UID))
 	var pids []string
 	for _, o := range orderRet.Orders {
 		pids = append(pids, strconv.Itoa(int(o.ProductId)))

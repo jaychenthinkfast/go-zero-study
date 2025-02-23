@@ -3,7 +3,6 @@ package main
 import (
 	"flag"
 	"fmt"
-
 	"mall/apps/app/api/internal/config"
 	"mall/apps/app/api/internal/handler"
 	"mall/apps/app/api/internal/svc"
@@ -14,6 +13,10 @@ import (
 
 var configFile = flag.String("f", "etc/api-api.yaml", "the config file")
 
+func init() {
+	//logx.DisableStat()
+	//logx.SetLevel(logx.ErrorLevel)
+}
 func main() {
 	flag.Parse()
 
