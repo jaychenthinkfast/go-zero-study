@@ -146,5 +146,15 @@ etc svc config 修改相关配置和代码
 ## mr.MapReduce
 logic 中使用 mr.MapReduce 并发执行 map reduce 函数，如果 map，reduce过程出错可以调用 cancel 取消当前map,reduce 所有任务
 
+## mr.Finish
+并行运行函数，如果有任何错误则取消
+
+## image upload
+product admin[rest api]
+
+使用了 aliyun oss
+
+
+
 
 

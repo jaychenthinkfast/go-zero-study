@@ -1,6 +1,9 @@
 api[after,order,product,reply]:
 	cd apps/app/api && go run api.go
 
+admin_api_rest:
+	cd apps/product/admin && go run admin.go
+
 order:
 	cd apps/order/rpc && go run order.go
 
@@ -16,6 +19,10 @@ test_order:
 test_productdetail:
 	curl http://127.0.0.1:8888/v1/product/detail?product_id=1
 
+test_imageupload:
+	curl --location 'http://127.0.0.1:8889/v1/upload/image' \
+    --form 'image=@"/path/test.png"'
+
 rpc[reply]:
 	cd apps/reply/rpc && goctl rpc protoc reply.proto --go_out=. --go-grpc_out=. --zrpc_out=.
 
@@ -27,3 +34,6 @@ rpc[order]:
 
 api[app]:
 	cd apps/app/api && goctl api go -api api.api -dir .
+
+admin_api[product]:
+	cd apps/product/admin && goctl api go -api admin.api -dir .
