@@ -86,7 +86,7 @@ type OrderListResponse struct {
 }
 
 type Product struct {
-	ID          int64   `json:"id"`          // 商品ID
+	ID          uint64  `json:"id"`          // 商品ID
 	Name        string  `json:"name"`        // 产品名称
 	Description string  `json:"description"` // 商品描述
 	Price       float64 `json:"price"`       // 商品价格

@@ -127,3 +127,24 @@ ReplyRPC:
     Key: reply.rpc
   NonBlock: true
 ```
+## db
+导入 db, 
+
+生成 model
+```shell
+goctl model mysql datasource -url="user:pass@tcp(127.0.0.1:3306)/product" --dir="./apps/product/rpc/internal/model" -cache=true -table="product,category"
+```
+开启redis缓存默认缓存时间 7 天 后如果model层发生 update 操作，会自动删除对应缓存
+
+查询中可能会在时间格式问题，TIMESTAMP解析为time.Time需
+dsn 设置parseTime参数  user:password@tcp(127.0.0.1:3306)/dbname?parseTime=true
+
+product下的
+etc svc config 修改相关配置和代码
+修改 logic代码
+
+## mr.MapReduce
+logic 中使用 mr.MapReduce 并发执行 map reduce 函数，如果 map，reduce过程出错可以调用 cancel 取消当前map,reduce 所有任务
+
+
+
