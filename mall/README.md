@@ -117,3 +117,13 @@ logic
 ```shell
 logx.Infow("order list", logx.Field("uid",req.UID))
 ```
+## 弱依赖
+NonBlock: true 不影响服务主服务启动，否则启动失败
+```shell
+ReplyRPC:
+  Etcd:
+    Hosts:
+      - 127.0.0.1:2379
+    Key: reply.rpc
+  NonBlock: true
+```
