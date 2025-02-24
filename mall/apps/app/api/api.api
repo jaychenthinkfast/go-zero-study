@@ -105,6 +105,13 @@ type (
 		ProductImage       string  `json:"product_image"`
 		ProductDescription string  `json:"product_description"`
 	}
+	ProductDetailRequest {
+		ProductID uint64 `form:"product_id"`
+	}
+	ProductDetailResponse {
+		Product  *Product   `json:"product"`
+		Comments []*Comment `json:"comments"`
+	}
 )
 
 service api-api {
@@ -135,5 +142,9 @@ service api-api {
 	@doc "订单列表"
 	@handler OrderListHandler
 	get /v1/order/list (OrderListRequest) returns (OrderListResponse)
+
+	@doc "商品详情"
+	@handler ProductDetailHandler
+	get /v1/product/detail (ProductDetailRequest) returns (ProductDetailResponse)
 }
 

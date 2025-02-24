@@ -51,6 +51,12 @@ func RegisterHandlers(server *rest.Server, serverCtx *svc.ServiceContext) {
 				Handler: ProductCommentHandler(serverCtx),
 			},
 			{
+				// 商品详情
+				Method:  http.MethodGet,
+				Path:    "/v1/product/detail",
+				Handler: ProductDetailHandler(serverCtx),
+			},
+			{
 				// 推荐商品列表
 				Method:  http.MethodGet,
 				Path:    "/v1/recommend",

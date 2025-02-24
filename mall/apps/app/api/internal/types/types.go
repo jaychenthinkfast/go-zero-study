@@ -109,6 +109,15 @@ type ProductCommentResponse struct {
 	CommentTime int64      `json:"comment_time"` // 评论列表最后一个评论的时间
 }
 
+type ProductDetailRequest struct {
+	ProductID uint64 `form:"product_id"`
+}
+
+type ProductDetailResponse struct {
+	Product  *Product   `json:"product"`
+	Comments []*Comment `json:"comments"`
+}
+
 type RecommendRequest struct {
 	Cursor int64 `json:"cursor"`
 	Ps     int64 `form:"ps,default=20"` // 每页大小
