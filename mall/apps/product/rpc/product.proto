@@ -23,16 +23,16 @@ message ProductResponse {
 
 
 message ProductListRequest {
-  int32 category_id = 1;
+  uint64 category_id = 1;
   int64 cursor = 2;
   int32 ps = 3;
-  int64 product_id = 4;
+  uint64 product_id = 4;
 }
 
 message ProductListResponse {
   bool is_end = 1;
   int64 timestamp = 2;
-  int64 product_id = 3;
+  uint64 product_id = 3;
   repeated ProductItem products = 4;
 }
 
@@ -41,4 +41,5 @@ message ProductItem {
   string name = 2;
   string description = 3;
   string image_url = 4;
+  int64 create_time = 5;
 }

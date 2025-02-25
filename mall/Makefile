@@ -28,6 +28,8 @@ test_imageupload:
 test_product:
 	grpcurl -plaintext -d '{"product_id": 1}' 127.0.0.1:8081 product.Product.Product
 
+test_productlist:
+	grpcurl -plaintext -d '{"category_id": 8}' 127.0.0.1:8081 product.Product.ProductList
 #code generation
 rpc[reply]:
 	cd apps/reply/rpc && goctl rpc protoc reply.proto --go_out=. --go-grpc_out=. --zrpc_out=.
