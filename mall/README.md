@@ -178,6 +178,63 @@ grpcurl -plaintext -d '{"product_id": 1}' 127.0.0.1:8081 product.Product.Product
 ```shell
 grpcurl -proto apps/product/rpc/product.proto -plaintext 127.0.0.1:8081  list product.Product 
 ```
+## 自定义 db 方法
+mall/apps/product/rpc/internal/model/productmodel.go
+
+customProductModel 实现了 productModel
+
+1. 添加接口方法
+2. 实现方法
+
+## redis
+实现分类商品缓存 zset
+
+mall/apps/product/rpc/internal/svc
+
+svc内 :redis.MustNewRedis(c.BizRedis)
+
+## SingleGroup
+防止热点数据缓存击穿
+
+mall/apps/product/rpc/internal/logic/productlogic.go
+
+l.svcCtx.SingleGroup.Do
+
+## 缓存穿透
+从 cache 穿透到 db
+
+默认带 cache db 查询无数据时 缓存一分钟
+
+## db  熔断
+github.com/zeromicro/go-zero@v1.8.0/core/stores/sqlx/sqlconn.go:117
+```go
+func (db *commonSqlConn) ExecCtx(ctx context.Context, q string, args ...any) (
+	result sql.Result, err error) {
+	ctx, span := startSpan(ctx, "Exec")
+	defer func() {
+		endSpan(span, err)
+	}()
+
+	err = db.brk.DoWithAcceptableCtx(ctx, func() error {
+		var conn *sql.DB
+		conn, err = db.connProv()
+		if err != nil {
+			db.onError(ctx, err)
+			return err
+		}
+
+		result, err = exec(ctx, conn, q, args...)
+		return err
+	}, db.acceptable)
+	if errors.Is(err, breaker.ErrServiceUnavailable) {
+		metricReqErr.Inc("Exec", "breaker")
+	}
+
+	return
+}
+```
+
+
 
 
 

@@ -2,6 +2,8 @@ package logic
 
 import (
 	"context"
+	"fmt"
+	"mall/apps/product/rpc/internal/model"
 
 	"mall/apps/product/rpc/internal/svc"
 	"mall/apps/product/rpc/product"
@@ -25,10 +27,13 @@ func NewProductLogic(ctx context.Context, svcCtx *svc.ServiceContext) *ProductLo
 
 func (l *ProductLogic) Product(in *product.ProductItemRequest) (*product.ProductItem, error) {
 	// todo: add your logic here and delete this line
-	p, err := l.svcCtx.ProductModel.FindOne(l.ctx, in.ProductId)
+	v, err, _ := l.svcCtx.SingleGroup.Do(fmt.Sprintf("product:%d", in.ProductId), func() (interface{}, error) {
+		return l.svcCtx.ProductModel.FindOne(l.ctx, in.ProductId)
+	})
 	if err != nil {
 		return nil, err
 	}
+	p := v.(*model.Product)
 	return &product.ProductItem{
 		ProductId: p.Id,
 		Name:      p.Name,
