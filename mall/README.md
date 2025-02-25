@@ -135,6 +135,7 @@ ReplyRPC:
 goctl model mysql datasource -url="user:pass@tcp(127.0.0.1:3306)/product" --dir="./apps/product/rpc/internal/model" -cache=true -table="product,category"
 ```
 开启redis缓存默认缓存时间 7 天 后如果model层发生 update 操作，会自动删除对应缓存
+,如果没有查到数据会设置一个空缓存，空缓存的过期时间为1分钟
 
 查询中可能会在时间格式问题，TIMESTAMP解析为time.Time需
 dsn 设置parseTime参数  user:password@tcp(127.0.0.1:3306)/dbname?parseTime=true
@@ -153,6 +154,31 @@ logic 中使用 mr.MapReduce 并发执行 map reduce 函数，如果 map，reduc
 product admin[rest api]
 
 使用了 aliyun oss
+
+## grpc test
+配置里需Mode: dev,
+gRPC 服务器才会注册反射服务。如果没有启用反射，grpcurl 将无法直接通过服务端查询服务的定义，除非你手动提供 .proto 文件或 protoset 文件。
+```shell
+go install github.com/fullstorydev/grpcurl/cmd/grpcurl
+```
+
+```shell
+grpcurl -plaintext 127.0.0.1:8081  list product.Product
+product.Product.Product
+product.Product.ProductList
+product.Product.Products
+
+grpcurl -plaintext -d '{"product_id": 1}' 127.0.0.1:8081 product.Product.Product
+{
+  "productId": "1",
+  "name": "name"
+}
+```
+未开启 Mode:dev 时需携带 proto
+```shell
+grpcurl -proto apps/product/rpc/product.proto -plaintext 127.0.0.1:8081  list product.Product 
+```
+
 
 
 

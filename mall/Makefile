@@ -1,3 +1,4 @@
+#svc
 api[after,order,product,reply]:
 	cd apps/app/api && go run api.go
 
@@ -13,6 +14,7 @@ product:
 reply:
 	cd apps/reply/rpc && go run reply.go
 
+#test
 test_order:
 	curl http://127.0.0.1:8888/v1/order/list?uid=123
 
@@ -23,6 +25,10 @@ test_imageupload:
 	curl --location 'http://127.0.0.1:8889/v1/upload/image' \
     --form 'image=@"/path/test.png"'
 
+test_product:
+	grpcurl -plaintext -d '{"product_id": 1}' 127.0.0.1:8081 product.Product.Product
+
+#code generation
 rpc[reply]:
 	cd apps/reply/rpc && goctl rpc protoc reply.proto --go_out=. --go-grpc_out=. --zrpc_out=.
 
@@ -37,3 +43,6 @@ api[app]:
 
 admin_api[product]:
 	cd apps/product/admin && goctl api go -api admin.api -dir .
+
+model[product]:
+	goctl model mysql datasource -url="user:pass@tcp(127.0.0.1:3306)/product" --dir="./apps/product/rpc/internal/model" -cache=true -table="*"
