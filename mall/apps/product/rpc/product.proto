@@ -7,6 +7,7 @@ service Product {
   rpc Product(ProductItemRequest) returns (ProductItem) ;
   rpc Products(ProductRequest) returns(ProductResponse);
   rpc ProductList(ProductListRequest) returns(ProductListResponse);
+  rpc OperationProducts(OperationProductsRequest) returns (OperationProductsResponse);
 }
 
 message ProductItemRequest {
@@ -34,6 +35,13 @@ message ProductListResponse {
   int64 timestamp = 2;
   uint64 product_id = 3;
   repeated ProductItem products = 4;
+}
+
+message OperationProductsRequest {
+}
+
+message OperationProductsResponse {
+  repeated ProductItem products = 1;
 }
 
 message ProductItem {

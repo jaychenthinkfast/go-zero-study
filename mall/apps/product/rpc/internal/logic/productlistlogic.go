@@ -129,7 +129,7 @@ func (l *ProductListLogic) ProductList(in *product.ProductListRequest) (*product
 	return ret, nil
 }
 
-func (l *ProductListLogic) productsByIds(ctx context.Context, pids []int64) ([]*model.Product, error) {
+func (l *ProductListLogic) productsByIds(ctx context.Context, pids []uint64) ([]*model.Product, error) {
 	products, err := mr.MapReduce(func(source chan<- any) {
 		for _, pid := range pids {
 			source <- pid
@@ -156,14 +156,14 @@ func (l *ProductListLogic) productsByIds(ctx context.Context, pids []int64) ([]*
 	return products.([]*model.Product), nil
 }
 
-func (l *ProductListLogic) cacheProductList(ctx context.Context, cid uint64, cursor, ps int64) ([]int64, error) {
+func (l *ProductListLogic) cacheProductList(ctx context.Context, cid uint64, cursor, ps int64) ([]uint64, error) {
 	pairs, err := l.svcCtx.BizRedis.ZrevrangebyscoreWithScoresAndLimitCtx(ctx, categoryKey(cid), cursor, 0, 0, int(ps))
 	if err != nil {
 		return nil, err
 	}
-	var ids []int64
+	var ids []uint64
 	for _, pair := range pairs {
-		id, _ := strconv.ParseInt(pair.Key, 10, 64)
+		id, _ := strconv.ParseUint(pair.Key, 10, 64)
 		ids = append(ids, id)
 	}
 	return ids, nil

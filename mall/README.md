@@ -205,7 +205,7 @@ l.svcCtx.SingleGroup.Do
 
 默认带 cache db 查询无数据时 缓存一分钟
 
-## db  熔断
+## db  熔断[自适应]
 github.com/zeromicro/go-zero@v1.8.0/core/stores/sqlx/sqlconn.go:117
 ```go
 func (db *commonSqlConn) ExecCtx(ctx context.Context, q string, args ...any) (
@@ -232,6 +232,10 @@ func (db *commonSqlConn) ExecCtx(ctx context.Context, q string, args ...any) (
 
 	return
 }
+```
+## localcache
+```go
+collection.NewCache(localCacheExpire)
 ```
 
 

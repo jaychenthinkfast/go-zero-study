@@ -45,7 +45,7 @@ type (
 		Cateid     uint64    `db:"cateid"`      // 类别Id
 		Name       string    `db:"name"`        // 商品名称
 		Subtitle   string    `db:"subtitle"`    // 商品副标题
-		Images     string    `db:"images"`      // 图片地址,json格式,扩展用
+		Images     string    `db:"images"`      // 图片地址,逗号分隔
 		Detail     string    `db:"detail"`      // 商品详情
 		Price      float64   `db:"price"`       // 价格,单位-元保留两位小数
 		Stock      int64     `db:"stock"`       // 库存数量
