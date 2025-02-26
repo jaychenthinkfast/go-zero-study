@@ -128,6 +128,8 @@ ReplyRPC:
   NonBlock: true
 ```
 ## db
+[mac 本地启mariadb测试并设置 root 密码](./mac_mariadb.md)
+
 导入 db, 
 
 生成 model
@@ -237,8 +239,33 @@ func (db *commonSqlConn) ExecCtx(ctx context.Context, q string, args ...any) (
 ```go
 collection.NewCache(localCacheExpire)
 ```
+本地缓存的特点是请求量超高，同时业务上能够允许一定的不一致，因为本地缓存一般不会主动做更新操作，
+需要等到过期后重新回源db后再更新。所以在业务中要视情况而定看是否需要使用本地缓存。
+## 热点数据识别
+维护一个滑动窗口，比如滑动窗口设置为10s，就是要统计这10s内有哪些key被高频访问，一个滑动窗口中对应多个Bucket，
+每个Bucket中对应一个map，map的key为商品的id，value为商品对应的请求次数。
+接着我们可以定时的(比如10s)去统计当前所有Buckets中的key的数据，然后把这些数据导入到大顶堆中，
+轻而易举的可以从大顶堆中获取topK的key，我们可以设置一个阈值，比如在一个滑动窗口时间内某一个key访问频次超过500次，
+就认为该key为热点key，从而自动地把该key升级为本地缓存。
 
+ps:和 go-zero  的自适应熔断原理类似，只是用法不同，这么处理因为热点数据是少量的，如果无法人类识别热点数据但是本地内存无法全量缓存所有数据时
+，需要按需缓存热点数据，节约内存
 
+tips:
+* key的命名要尽量易读，即见名知意，在易读的前提下长度要尽可能的小，以减少资源的占用，对于value来说可以用int就尽量不要用string，对于小于N的value，redis内部有shared_object缓存。
+* 在redis使用hash的情况下进行key的拆分，同一个hash key会落到同一个redis节点，hash过大的情况下会导致内存以及请求分布的不均匀，考虑对hash进行拆分为小的hash，使得节点内存均匀避免单节点请求热点。
+* 为了避免不存在的数据请求，导致每次请求都缓存miss直接打到数据库中，进行空缓存的设置。
+* 缓存中需要存对象的时候，序列化尽量使用protobuf，尽可能减少数据大小。
+* 新增数据的时候要保证缓存务必存在的情况下再去操作新增，使用Expire来判断缓存是否存在。
+* 对于存储每日登录场景的需求，可以使用BITSET，为了避免单个BITSET过大或者热点，可以进行sharding。
+* 在使用sorted set的时候，避免使用zrange或者zrevrange返回过大的集合，复杂度较高。
+* 在进行缓存操作的时候尽量使用PIPELINE，但也要注意避免集合过大。
+* 避免超大的value。
+* 缓存尽量要设置过期时间。
+* 慎用全量操作命令，比如Hash类型的HGETALL、Set类型的SMEMBERS等，这些操作会对Hash和Set的底层数据结构进行全量扫描，如果数据量较多的话，会阻塞Redis主线程。
+* 获取集合类型的全量数据可以使用SSCAN、HSCAN等命令分批返回集合中的数据，减少对主线程的阻塞。
+* 慎用MONITOR命令，MONITOR命令会把监控到的内容持续写入输出缓冲区，如果线上命令操作很多，输出缓冲区很快就会溢出，会对Redis性能造成影响。
+* 生产环境禁用KEYS、FLUSHALL、FLUSHDB等命令。
 
 
 
