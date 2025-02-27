@@ -30,6 +30,19 @@ mkdir apps/order
 goctl rpc new rpc  #对内提供 rpc服务
 goctl api new admin #对内 http服务
 ```
+## 依赖
+### etcd
+用于服务注册发现
+```shell
+brew install etcd
+brew services start etcd
+```
+### redis
+用于缓存（db等）
+```shell
+brew install redis
+brew services start redis
+```
 ## 添加 apps/app api
 bff接口对外 提供 http api
 
