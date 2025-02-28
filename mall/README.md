@@ -31,6 +31,8 @@ goctl rpc new rpc  #对内提供 rpc服务
 goctl api new admin #对内 http服务
 ```
 ## 依赖
+### mariadb
+[mac 本地启mariadb测试并设置 root 密码](./mac_mariadb.md)
 ### etcd
 用于服务注册发现
 ```shell
@@ -42,6 +44,34 @@ brew services start etcd
 ```shell
 brew install redis
 brew services start redis
+```
+### kafka
+用户消息队列（秒杀后续订单处理）
+```shell
+brew install kafka
+```
+安装 kafka同时安装了其依赖 zookeeper
+```shell
+brew services start zookeeper
+brew services start kafka
+```
+测试
+```shell
+//创建 topic
+kafka-topics --bootstrap-server localhost:9092 --create --topic test-topic --partitions 1 --replication-factor 1
+//列出 topic
+kafka-topics --bootstrap-server localhost:9092 --list
+//发送消息
+kafka-console-producer --bootstrap-server localhost:9092 --topic test-topic
+//消费消息
+kafka-console-consumer --bootstrap-server localhost:9092 --topic test-topic --from-beginning
+//检查端口
+lsof -i :9092
+lsof -i :2181
+//zk cli
+zookeeper-shell localhost:2181
+ls /brokers/topics
+get /brokers/topics/test-topic
 ```
 ## 添加 apps/app api
 bff接口对外 提供 http api
@@ -141,8 +171,6 @@ ReplyRPC:
   NonBlock: true
 ```
 ## db
-[mac 本地启mariadb测试并设置 root 密码](./mac_mariadb.md)
-
 导入 db, 
 
 生成 model
@@ -280,7 +308,16 @@ tips:
 * 慎用MONITOR命令，MONITOR命令会把监控到的内容持续写入输出缓冲区，如果线上命令操作很多，输出缓冲区很快就会溢出，会对Redis性能造成影响。
 * 生产环境禁用KEYS、FLUSHALL、FLUSHDB等命令。
 
+## limiter
+NewPeriodLimit 是一个用于实现周期性限流的工具，属于 github.com/zeromicro/go-zero/core/limit 包。
+它主要用于限制某个资源在特定时间段内的访问频率，常见于 API 接口限流、防止高并发攻击或保护系统资源。
 
+```go
+//周期，限额，存储（redis),前缀（id,ip，api path)
+limit.NewPeriodLimit(limitPeriod, limitQuota, svcCtx.BizRedis, seckillUserPrefix),
+//具体 key
+code, _ := l.limiter.Take(strconv.FormatUint(in.UserId, 10))
+```
 
 
 

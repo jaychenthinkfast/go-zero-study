@@ -14,6 +14,9 @@ product:
 reply:
 	cd apps/reply/rpc && go run reply.go
 
+seckill:
+	cd apps/seckill/rpc && go run seckill.go
+
 #test
 redis_flushall:
 	redis-cli flushall
@@ -36,6 +39,10 @@ test_ProductList:
 
 test_OperationProducts:
 	grpcurl -plaintext -d '{}' 127.0.0.1:8081 product.Product.OperationProducts
+
+test_SeckillOrder:
+	grpcurl -plaintext -d '{"user_id": 111, "product_id": 10}' 127.0.0.1:9889 seckill.Seckill.SeckillOrder
+
 #code generation
 rpc[reply]:
 	cd apps/reply/rpc && goctl rpc protoc reply.proto --go_out=. --go-grpc_out=. --zrpc_out=.
@@ -45,6 +52,9 @@ rpc[product]:
 
 rpc[order]:
 	cd apps/order/rpc && goctl rpc protoc order.proto --go_out=. --go-grpc_out=. --zrpc_out=.
+
+rpc[seckill]:
+	cd apps/seckill/rpc && goctl rpc protoc seckill.proto --go_out=. --go-grpc_out=. --zrpc_out=.
 
 api[app]:
 	cd apps/app/api && goctl api go -api api.api -dir .

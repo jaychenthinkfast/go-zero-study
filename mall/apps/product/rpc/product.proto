@@ -50,4 +50,5 @@ message ProductItem {
   string description = 3;
   string image_url = 4;
   int64 create_time = 5;
+  int64 stock  = 6;
 }
