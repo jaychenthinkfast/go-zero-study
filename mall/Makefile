@@ -17,6 +17,9 @@ reply:
 seckill:
 	cd apps/seckill/rpc && go run seckill.go
 
+seckill_rmq:
+	cd apps/seckill/rmq && go run seckill.go
+
 #test
 redis_flushall:
 	redis-cli flushall
@@ -64,3 +67,6 @@ admin_api[product]:
 
 model[product]:
 	goctl model mysql datasource -url="user:pass@tcp(127.0.0.1:3307)/product" --dir="./apps/product/rpc/internal/model" -cache=true -table="*"
+
+model[order]:
+	goctl model mysql datasource -url="user:pass@tcp(127.0.0.1:3307)/orders" --dir="./apps/order/rpc/internal/model" -cache=true -table="*"

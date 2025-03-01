@@ -2,6 +2,7 @@ package model
 
 import (
 	"context"
+	"database/sql"
 	"fmt"
 	"github.com/zeromicro/go-zero/core/stores/cache"
 	"github.com/zeromicro/go-zero/core/stores/sqlx"
@@ -15,6 +16,7 @@ type (
 	ProductModel interface {
 		productModel
 		CategoryProducts(ctx context.Context, ctime string, cateid uint64, limit int64) ([]*Product, error)
+		UpdateProductStock(ctx context.Context, pid uint64, num int64) error
 	}
 
 	customProductModel struct {
@@ -36,4 +38,12 @@ func (m *customProductModel) CategoryProducts(ctx context.Context, ctime string,
 		return nil, err
 	}
 	return products, nil
+}
+
+func (m *customProductModel) UpdateProductStock(ctx context.Context, pid uint64, num int64) error {
+	productProductIdKey := fmt.Sprintf("%s%v", cacheProductProductIdPrefix, pid)
+	_, err := m.ExecCtx(ctx, func(ctx context.Context, conn sqlx.SqlConn) (sql.Result, error) {
+		return conn.ExecCtx(ctx, fmt.Sprintf("UPDATE %s SET stock = stock - ? WHERE id = ?", m.table), num, pid)
+	}, productProductIdKey)
+	return err
 }

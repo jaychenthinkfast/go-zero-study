@@ -318,7 +318,32 @@ limit.NewPeriodLimit(limitPeriod, limitQuota, svcCtx.BizRedis, seckillUserPrefix
 //具体 key
 code, _ := l.limiter.Take(strconv.FormatUint(in.UserId, 10))
 ```
+## kafka 消费
+消费参数
 
+Consumers : go-queue 内部是起多个 goroutine 从 kafka 中获取信息写入进程内的 channel，这个参数是控制此处的 goroutine 数量（⚠️ 并不是真正消费时的并发 goroutine 数量）
+
+Processors: 当 Consumers 中的多个 goroutine 将 kafka 消息拉取到进程内部的 channel 后，我们要真正消费消息写入我们自己逻辑，go-queue 内部通过此参数控制当前消费的并发 goroutine 数量
+
+```go
+srv := service.NewService(c)
+queue := kq.MustNewQueue(c.Kafka, kq.WithHandle(srv.Consume))
+```
+## db事务
+```go
+ _, err := m.ExecCtx(ctx, func(ctx context.Context, conn sqlx.SqlConn) (sql.Result, error) {
+    err := conn.TransactCtx(ctx, func(ctx context.Context, session sqlx.Session) error {
+      _, err := session.ExecCtx(ctx, "INSERT INTO orders(id, userid) VALUES(?,?)", oid, uid)
+      if err != nil {
+        return err
+      }
+      _, err = session.ExecCtx(ctx, "INSERT INTO orderitem(orderid, userid, proid) VALUES(?,?,?)", "", uid, pid)
+      return err
+    })
+    return nil, err
+  })
+  return err
+```
 
 
 
