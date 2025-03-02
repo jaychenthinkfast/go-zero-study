@@ -70,3 +70,7 @@ model[product]:
 
 model[order]:
 	goctl model mysql datasource -url="user:pass@tcp(127.0.0.1:3307)/orders" --dir="./apps/order/rpc/internal/model" -cache=true -table="*"
+
+#data generation
+seckill_stock_preheating:
+	redis-cli hset stock:10 total 10 seckill 5

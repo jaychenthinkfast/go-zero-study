@@ -3,7 +3,6 @@ package service
 import (
 	"context"
 	"encoding/json"
-	"fmt"
 	"github.com/zeromicro/go-zero/core/logx"
 	"log"
 	"mall/apps/order/rpc/order"
@@ -59,14 +58,10 @@ func (s *Service) consume(ch chan *KafkaData) {
 		if !ok {
 			log.Fatal("seckill rmq exit")
 		}
-		fmt.Printf("consume msg: %+v\n", m)
-		p, err := s.ProductRPC.Product(context.Background(), &product.ProductItemRequest{ProductId: m.Pid})
+		logx.Infof("consume msg: %+v\n", m)
+		_, err := s.ProductRPC.CheckAndUpdateStock(context.Background(), &product.CheckAndUpdateStockRequest{ProductId: m.Pid})
 		if err != nil {
-			logx.Errorf("s.ProductRPC.Product pid: %d error: %v", m.Pid, err)
-			return
-		}
-		if p.Stock <= 0 {
-			logx.Errorf("stock is zero pid: %d", m.Pid)
+			logx.Errorf("s.ProductRPC.CheckAndUpdateStock pid: %d error: %v", m.Pid, err)
 			return
 		}
 		_, err = s.OrderRPC.CreateOrder(context.Background(), &order.CreateOrderRequest{Uid: m.Uid, Pid: m.Pid})
