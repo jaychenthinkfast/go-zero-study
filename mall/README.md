@@ -349,6 +349,36 @@ seckill/rpc -> pkg/batcher
 
 按 pid 进行分片到 worker进行消费 ，按照 size  或者  interval 进行聚合 push到 kafka 达到批量聚合发送效果，
 以减少网络 io 和磁盘 io
+## 扣减库存
+原子操作(decr ｜ lua 脚本)
+
+### 分布式锁
+#### redlock
+#### etcd
+```go
+cli, err := clientv3.New(clientv3.Config{Endpoints: endpoints})
+if err != nil {
+   log.Fatal(err)
+}
+defer cli.Close()
+
+session, err := concurrency.NewSession(cli, concurrency.WithTTL(10))
+if err != nil {
+   log.Fatal(err)
+}
+defer session.Close()
+
+mux := concurrency.NewMutex(session, "lock")
+if err := mux.Lock(context.Background()); err != nil {
+   log.Fatal(err)
+}
+
+
+if err := mux.Unlock(context.Background()); err != nil {
+   log.Fatal(err)
+}
+```
+
 
 
 
