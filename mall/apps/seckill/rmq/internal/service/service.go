@@ -34,26 +34,28 @@ func NewService(c config.Config) *Service {
 
 func (s *Service) Consume(ctx context.Context, _ string, value string) error {
 	logx.Infof("Consume value: %s\n", value)
-	var data KafkaData
-	if err := json.Unmarshal([]byte(value), &data); err != nil {
+	var datas []KafkaData
+	if err := json.Unmarshal([]byte(value), &datas); err != nil {
 		return err
 	}
-	p, err := s.ProductRPC.Product(ctx, &product.ProductItemRequest{ProductId: data.Pid})
-	if err != nil {
-		return err
-	}
-	if p.Stock <= 0 {
-		return nil
-	}
-	_, err = s.OrderRPC.CreateOrder(ctx, &order.CreateOrderRequest{Uid: data.Uid, Pid: data.Pid})
-	if err != nil {
-		logx.Errorf("CreateOrder uid: %d pid: %d error: %v", data.Uid, data.Pid, err)
-		return err
-	}
-	_, err = s.ProductRPC.UpdateProductStock(ctx, &product.UpdateProductStockRequest{ProductId: data.Pid, Num: 1})
-	if err != nil {
-		logx.Errorf("UpdateProductStock uid: %d pid: %d error: %v", data.Uid, data.Pid, err)
-		return err
+	for _, data := range datas {
+		p, err := s.ProductRPC.Product(ctx, &product.ProductItemRequest{ProductId: data.Pid})
+		if err != nil {
+			return err
+		}
+		if p.Stock <= 0 {
+			return nil
+		}
+		_, err = s.OrderRPC.CreateOrder(ctx, &order.CreateOrderRequest{Uid: data.Uid, Pid: data.Pid})
+		if err != nil {
+			logx.Errorf("CreateOrder uid: %d pid: %d error: %v", data.Uid, data.Pid, err)
+			return err
+		}
+		_, err = s.ProductRPC.UpdateProductStock(ctx, &product.UpdateProductStockRequest{ProductId: data.Pid, Num: 1})
+		if err != nil {
+			logx.Errorf("UpdateProductStock uid: %d pid: %d error: %v", data.Uid, data.Pid, err)
+			return err
+		}
 	}
 	// TODO notify user of successful order placement
 	return nil

@@ -344,6 +344,11 @@ queue := kq.MustNewQueue(c.Kafka, kq.WithHandle(srv.Consume))
   })
   return err
 ```
+## batcher
+seckill/rpc -> pkg/batcher
+
+按 pid 进行分片到 worker进行消费 ，按照 size  或者  interval 进行聚合 push到 kafka 达到批量聚合发送效果，
+以减少网络 io 和磁盘 io
 
 
 
