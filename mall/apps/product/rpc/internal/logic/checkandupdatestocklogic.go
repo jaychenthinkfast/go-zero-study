@@ -40,6 +40,8 @@ return 0
 )
 
 func (l *CheckAndUpdateStockLogic) CheckAndUpdateStock(in *product.CheckAndUpdateStockRequest) (*product.CheckAndUpdateStockResponse, error) {
+	// 这里需要前置条件，库存已经按stockKey规则存入 redis，这里在 makefile里硬编码写入 redis,
+	// 实际可能需要定时脚本在商品预热时写入 redis
 	val, err := l.svcCtx.BizRedis.EvalCtx(l.ctx, luaCheckAndUpdateScript, []string{stockKey(in.ProductId)})
 	if err != nil {
 		return nil, err

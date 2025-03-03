@@ -379,6 +379,28 @@ if err := mux.Unlock(context.Background()); err != nil {
 }
 ```
 
+## xa
+xa 是一种分布式事务协议，它允许多个数据库事务被原子化，即要么全部提交，要么全部回滚。
+
+两个阶段
+1. 准备阶段
+   * 如果失败则回滚
+2. 提交阶段
+   * 如果失败一直重试
+
+开源实现 https://github.com/apache/incubator-seata-go
+
+## dtm 
+分布式事务管理器 https://github.com/dtm-labs/dtm 
+```go
+brew install dtm
+```
+dtm 没有默认的 services 配置，需要手动启动
+
+makefile中启动
+```
+dtm -c dtm.yml
+```
 
 
 

@@ -20,6 +20,9 @@ seckill:
 seckill_rmq:
 	cd apps/seckill/rmq && go run seckill.go
 
+dtm_svc:
+	dtm -c dtm.yml
+
 #test
 redis_flushall:
 	redis-cli flushall
