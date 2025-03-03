@@ -391,7 +391,11 @@ xa 是一种分布式事务协议，它允许多个数据库事务被原子化�
 开源实现 https://github.com/apache/incubator-seata-go
 
 ## dtm 
-分布式事务管理器 https://github.com/dtm-labs/dtm 
+分布式事务管理器 
+
+https://github.com/dtm-labs/dtm  
+
+https://dtm.pub/guide/e-tcc.html
 ```go
 brew install dtm
 ```
@@ -401,6 +405,49 @@ makefile中启动
 ```
 dtm -c dtm.yml
 ```
+需要注册并实现 tcc方法
 
+Try、Confirm和Cancel
 
+在Try对应的方法中主要做一些数据的Check操作，Check数据满足下单要求后，执行Confirm对应的方法，Confirm对应的方法是真正实现业务逻辑的，如果失败回滚则执行Cancel对应的方法，Cancel方法主要是对Confirm方法的数据进行补偿。
+```go
+        gid := dtmgrpc.MustGenGid(dtmServer)
+		err := dtmgrpc.TccGlobalTransaction(dtmServer, gid, func(tcc *dtmgrpc.TccGrpc) error {
+			if e := tcc.CallBranch(
+				&product.UpdateProductStockRequest{ProductId: m.Pid, Num: 1},
+				productServer+"/product.Product/CheckProductStock",
+				productServer+"/product.Product/UpdateProductStock",
+				productServer+"/product.Product/RollbackProductStock",
+				&product.UpdateProductStockRequest{}); err != nil {
+				logx.Errorf("tcc.CallBranch server: %s error: %v", productServer, err)
+				return e
+			}
+			if e := tcc.CallBranch(
+				&order.CreateOrderRequest{Uid: m.Uid, Pid: m.Pid},
+				orderServer+"/order.Order/CreateOrderCheck",
+				orderServer+"/order.Order/CreateOrder",
+				orderServer+"/order.Order/RollbackOrder",
+				&order.CreateOrderResponse{},
+			); err != nil {
+				logx.Errorf("tcc.CallBranch server: %s error: %v", orderServer, err)
+				return e
+			}
+			return nil
+		})
+```
+根据 DTM 的官方实现（截至最新版本，例如 v1.18.0），默认情况下：
+* 重试次数上限（MaxRetries）: DTM 默认设置为 无上限重试，但实际重试行为受其他因素限制，例如超时时间或手动干预。 
+* 重试间隔（RetryInterval）: 默认是 指数退避，初始间隔通常为 1 秒（1000 毫秒），每次失败后间隔会递增（例如 1s → 2s → 4s）。 
+* 超时控制: DTM 的事务有全局超时配置，默认是 60 秒（TimeoutToFail）。如果事务在超时时间内未完成（包括所有重试），会被标记为失败。
+
+建议对重试和超时进行配置，对重试进行监控以便发现问题，及时人工介入，https://github.com/dtm-labs/dtm/blob/main/conf.sample.yml
+dtm 默认支持对重试进行告警配置并配置相关 webhook
+
+默认后端 bolt仅可用于测试，未支持多机部署，因此不适合线上应用。
+
+可根据事务并发考虑 
+* mysql（Mysql，MariaDB，TiDB，postgres）
+  * 采用关系数据库进行存储，性能测试报告显示：2.6wIOPS磁盘上的的Mysql数据库，能够提供900+事务每秒，能够满足绝大部分公司的分布式事务需求。
+* redis
+  * 采用Redis进行存储，可以达到非常高的性能，预计提供1w+事务每秒。
 
