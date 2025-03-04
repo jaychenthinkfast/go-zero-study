@@ -49,6 +49,20 @@ test_OperationProducts:
 test_SeckillOrder:
 	grpcurl -plaintext -d '{"user_id": 111, "product_id": 10}' 127.0.0.1:9889 seckill.Seckill.SeckillOrder
 
+## kafka
+### 需要程序启动前提前创建 topic
+kafka_topic_create:
+	kafka-topics --bootstrap-server localhost:9092 --create --topic seckill-topic --partitions 1 --replication-factor 1
+
+kafka_topic_list:
+	kafka-topics --bootstrap-server localhost:9092 --list
+
+kafka_topic_producer:
+	kafka-console-producer --bootstrap-server localhost:9092 --topic seckill-topic
+
+kafka_topic_consumer:
+	kafka-console-consumer --bootstrap-server localhost:9092 --topic seckill-topic --from-beginning
+
 #code generation
 rpc[reply]:
 	cd apps/reply/rpc && goctl rpc protoc reply.proto --go_out=. --go-grpc_out=. --zrpc_out=.
@@ -75,5 +89,6 @@ model[order]:
 	goctl model mysql datasource -url="user:pass@tcp(127.0.0.1:3307)/orders" --dir="./apps/order/rpc/internal/model" -cache=true -table="*"
 
 #data generation
+## 预热库存 ， 默认key为 stock:{product_id} total 总库存  seckill 已秒杀
 seckill_stock_preheating:
 	redis-cli hset stock:10 total 10 seckill 5
